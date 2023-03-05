@@ -4,10 +4,12 @@ import requests
 import random
 import locale
 
+locale.setlocale(locale.LC_ALL, "")
+
 class InvalidPlayerIdException(Exception):
   pass
 
-class Universe(abc.ABC):
+class Universe:
   def __init__(self, playerFactory: PlayerFactory) -> None:
     self.playerFactory = playerFactory 
 
@@ -165,7 +167,7 @@ class StarWarsPlayerRequestor(PlayerRequestor):
         self.cache.setItem(id, player)
         return player
 
-class PlayerFactory(abc.ABC):
+class PlayerFactory:
   def __init__(self, playerRequestor: PlayerRequestor) -> None:
     self.playerRequestor = playerRequestor
     self.playerCount = None
@@ -217,7 +219,7 @@ class Team:
   def __repr__(self) -> str:
     return f'Team(players={self._players})'  
 
-class TeamFactory(abc.ABC):
+class TeamFactory:
   def __init__(self, universe: Universe):
     self.universe = universe
 
@@ -228,16 +230,24 @@ class TeamFactory(abc.ABC):
       players.append(player)
     return Team(players)
 
+class PokemonTeamFactory(TeamFactory):
+  def __init__(self):
+    super().__init__(Universe(StarWarsPlayerFactory()))
+
+class StarWarsTeamFactory(TeamFactory):
+  def __init__(self):
+    super().__init__(Universe(StarWarsPlayerFactory()))
+    
 def main():
   print(10 * "-" + " pokemon " + 10 * "-")
-  pokemonTeam = TeamFactory(Universe(PokemonPlayerFactory())).createTeam()
+  pokemonTeam = PokemonTeamFactory().createTeam()
   print(pokemonTeam)
   print('goalie:', pokemonTeam.getGoalie())
   print('defense:', pokemonTeam.getDefense())
   print('offense:', pokemonTeam.getOffense())
 
   print(10 * "-" + " starwars " + 10 * "-")
-  starWarsTeam = TeamFactory(Universe(StarWarsPlayerFactory())).createTeam()
+  starWarsTeam = StarWarsTeamFactory().createTeam()
   print(starWarsTeam)
   print('goalie:', starWarsTeam.getGoalie())
   print('defense:', starWarsTeam.getDefense())
@@ -245,5 +255,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-
-
